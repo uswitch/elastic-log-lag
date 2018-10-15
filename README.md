@@ -22,7 +22,7 @@ It also takes `ELASTIC_USER` and `ELASTIC_PASSWORD` as `ENV` vars if you need to
 * `index`: name of index to query
 * `queryKey`: key to query
 * `queryValue`: value to find
-* `timeField`: field used to sort document age by
+* `timeField`: field used when sorting documents by age
 * `timeLayout`: the format of your time field ([golang style](https://golang.org/src/time/format.go))
 
 You provide this config in a json file like so:
