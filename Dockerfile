@@ -1,5 +1,5 @@
 FROM scratch
 
-ADD elastic-log-lag eslag
+ADD bin/elastic-log-lag elastic-log-lag
 
-ENTRYPOINT ["/eslag"]
+ENTRYPOINT ["/elastic-log-lag"]
