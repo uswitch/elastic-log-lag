@@ -11,25 +11,36 @@ import (
 )
 
 type querier struct {
-	Query  query
-	Client *elastic.Client
-	Lag    prometheus.Gauge
+	Query   query
+	Client  *elastic.Client
+	Lag     prometheus.Histogram
+	Counter prometheus.Counter
 }
 
 func newQuerier(q query, client *elastic.Client) querier {
-	gauge := prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name:        "log_lag_seconds",
+	histogram := prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:        "log_lag_histo_seconds",
 			Help:        "Amount of time between the most recent log and now in seconds",
+			ConstLabels: prometheus.Labels{"index": q.Index},
+			Buckets:     []float64{10, 30, 45, 60, 120, 300, 600, 6000},
+		},
+	)
+
+	counter := prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name:        "log_lag_calculations_total",
+			Help:        "amount of times log lag has been calculated",
 			ConstLabels: prometheus.Labels{"index": q.Index},
 		},
 	)
-	prometheus.MustRegister(gauge)
+	prometheus.MustRegister(histogram, counter)
 
 	return querier{
-		Query:  q,
-		Client: client,
-		Lag:    gauge,
+		Query:   q,
+		Client:  client,
+		Lag:     histogram,
+		Counter: counter,
 	}
 }
 
@@ -80,6 +91,7 @@ func (q querier) getTimeDiff() {
 
 	timeDiff := time.Now().Sub(timestamp)
 	log.Infof("time diff for index: %v is: %v\n", q.Query.Index, timeDiff)
-	q.Lag.Set(timeDiff.Seconds())
+	q.Lag.Observe(timeDiff.Seconds())
+	q.Counter.Inc()
 
 }
