@@ -1,7 +1,7 @@
 # Elastic-log-lag
 
 Elastic-log-lag queries a given index and finds the newest document, it will then find the time difference between that document's timestamp and the current time.
-It exposes this as a prometheus metric of `log_lag_seconds` with a label of `index: index-name`.
+It exposes this as a prometheus metric of `log_lag_seconds` with a label of `index: index-name`. It also exposes the metric as a histogram of `log_lag_histogram_seconds` which is useful if you want to calculate percentiles/quantiles etc.
 
 The rationale behind this was to allow us to easily see if we are having a problem somewhere in our logging pipeline, for example loadbalancer logs should be generated many times in a second, so if the time difference starts to become minutes we will know there's a problem somewhere in the pipeline.
 
