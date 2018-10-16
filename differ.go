@@ -21,7 +21,7 @@ func newQuerier(q query, client *elastic.Client) querier {
 	histogram := prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name:        "log_lag_histogram_seconds",
-			Help:        "Histrogram showing amount of time between the most recent log and now in seconds",
+			Help:        "Histogram showing amount of time between the most recent log and now in seconds",
 			ConstLabels: prometheus.Labels{"index": q.Index},
 			Buckets:     []float64{10, 30, 45, 60, 120, 300, 600, 6000},
 		},
