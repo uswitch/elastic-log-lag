@@ -16,6 +16,9 @@ all: test build
 $(BIN_DARWIN): $(SOURCES)
 	GOARCH=$(ARCH) GOOS=darwin go build -o $(BIN_DARWIN) $(CMD_SRC)
 
+.PHONY: build-linux
+build-linux: $(BIN_LINUX)
+
 $(BIN_LINUX): $(SOURCES)
 	GOARCH=$(ARCH) GOOS=linux CGO_ENABLED=0 go build -o $(BIN_LINUX) $(CMD_SRC)
 
