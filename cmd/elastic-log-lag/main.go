@@ -15,15 +15,9 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/olivere/elastic"
-)
 
-type query struct {
-	Index      string `json:"index"`
-	TimeField  string `json:"timeField"`
-	QueryKey   string `json:"queryKey"`
-	QueryValue string `json:"queryValue"`
-	TimeLayout string `json:"timeLayout"`
-}
+	"github.com/uswitch/elastic-log-lag/internal/differ"
+)
 
 type options struct {
 	configFile  string
@@ -43,7 +37,7 @@ func main() {
 	opts.elasticUser = os.Getenv("ELASTIC_USER")
 	opts.elasticPass = os.Getenv("ELASTIC_PASSWORD")
 
-	queries := make([]query, 0)
+	queries := make([]differ.Query, 0)
 
 	file, err := ioutil.ReadFile(opts.configFile)
 	if err != nil {
@@ -80,7 +74,7 @@ func main() {
 	}()
 
 	for _, query := range queries {
-		q := newQuerier(query, client)
+		q := differ.NewQuerier(query, client)
 		go q.Run(ctx)
 	}
 

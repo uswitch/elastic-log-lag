@@ -1,4 +1,4 @@
-package main
+package differ
 
 import (
 	"context"
@@ -10,14 +10,22 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type querier struct {
-	Query     query
+type Query struct {
+	Index      string `json:"index"`
+	TimeField  string `json:"timeField"`
+	QueryKey   string `json:"queryKey"`
+	QueryValue string `json:"queryValue"`
+	TimeLayout string `json:"timeLayout"`
+}
+
+type Querier struct {
+	Query     Query
 	Client    *elastic.Client
 	Histogram prometheus.Histogram
 	Gauge     prometheus.Gauge
 }
 
-func newQuerier(q query, client *elastic.Client) querier {
+func NewQuerier(q Query, client *elastic.Client) Querier {
 	histogram := prometheus.NewHistogram(
 		prometheus.HistogramOpts{
 			Name:        "log_lag_histogram_seconds",
@@ -37,7 +45,7 @@ func newQuerier(q query, client *elastic.Client) querier {
 
 	prometheus.MustRegister(histogram, gauge)
 
-	return querier{
+	return Querier{
 		Query:     q,
 		Client:    client,
 		Histogram: histogram,
@@ -45,7 +53,7 @@ func newQuerier(q query, client *elastic.Client) querier {
 	}
 }
 
-func (q querier) Run(ctx context.Context) {
+func (q Querier) Run(ctx context.Context) {
 
 	ticker := time.Tick(time.Second * 60)
 	q.getTimeDiff()
@@ -62,7 +70,7 @@ func (q querier) Run(ctx context.Context) {
 	}()
 }
 
-func (q querier) getTimeDiff() {
+func (q Querier) getTimeDiff() {
 	termQuery := elastic.NewTermQuery(q.Query.QueryKey, q.Query.QueryValue)
 	result, err := q.Client.Search().
 		Index(q.Query.Index).

@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/static:nonroot
 
 WORKDIR /
-COPY bin/elastic-log-lag elastic-log-lag
+COPY bin/elastic-log-lag-linux-amd64 elastic-log-lag
 
 USER nonroot:nonroot
 
