@@ -7,11 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
-	"k8s.io/kubernetes/staging/src/k8s.io/sample-controller/pkg/signals"
 
 	"github.com/olivere/elastic"
 )
@@ -59,7 +60,9 @@ func main() {
 		log.Fatalf("error creating elastic client: %v", err)
 	}
 
-	stopCh := signals.SetupSignalHandler()
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
