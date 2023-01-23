@@ -1,5 +1,8 @@
-FROM scratch
+FROM gcr.io/distroless/static:nonroot
 
-ADD bin/elastic-log-lag elastic-log-lag
+WORKDIR /
+COPY bin/elastic-log-lag-linux-amd64 elastic-log-lag
+
+USER nonroot:nonroot
 
 ENTRYPOINT ["/elastic-log-lag"]

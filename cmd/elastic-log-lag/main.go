@@ -7,22 +7,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
-	"k8s.io/kubernetes/staging/src/k8s.io/sample-controller/pkg/signals"
 
 	"github.com/olivere/elastic"
-)
 
-type query struct {
-	Index      string `json:"index"`
-	TimeField  string `json:"timeField"`
-	QueryKey   string `json:"queryKey"`
-	QueryValue string `json:"queryValue"`
-	TimeLayout string `json:"timeLayout"`
-}
+	"github.com/uswitch/elastic-log-lag/internal/differ"
+)
 
 type options struct {
 	configFile  string
@@ -42,7 +37,7 @@ func main() {
 	opts.elasticUser = os.Getenv("ELASTIC_USER")
 	opts.elasticPass = os.Getenv("ELASTIC_PASSWORD")
 
-	queries := make([]query, 0)
+	queries := make([]differ.Query, 0)
 
 	file, err := ioutil.ReadFile(opts.configFile)
 	if err != nil {
@@ -59,7 +54,9 @@ func main() {
 		log.Fatalf("error creating elastic client: %v", err)
 	}
 
-	stopCh := signals.SetupSignalHandler()
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -77,7 +74,7 @@ func main() {
 	}()
 
 	for _, query := range queries {
-		q := newQuerier(query, client)
+		q := differ.NewQuerier(query, client)
 		go q.Run(ctx)
 	}
 
